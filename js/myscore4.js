@@ -16,6 +16,6 @@ function draw_empty_board() {
 
 	t+='</table>';
 	
-	$('#chess_board').html(t);
+	$('#score4_board').html(t);
 }
 
