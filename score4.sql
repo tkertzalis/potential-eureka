@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Φιλοξενητής: 127.0.0.1
--- Χρόνος δημιουργίας: 03 Δεκ 2020 στις 12:51:21
+-- Χρόνος δημιουργίας: 16 Δεκ 2020 στις 12:14:24
 -- Έκδοση διακομιστή: 10.4.14-MariaDB
 -- Έκδοση PHP: 7.2.34
 
@@ -23,6 +23,17 @@ SET time_zone = "+00:00";
 CREATE DATABASE IF NOT EXISTS `score4` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `score4`;
 
+DELIMITER $$
+--
+-- Διαδικασίες
+--
+DROP PROCEDURE IF EXISTS `clean_board`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `clean_board` ()  BEGIN 
+	REPLACE INTO board SELECT * FROM board_empty;
+END$$
+
+DELIMITER ;
+
 -- --------------------------------------------------------
 
 --
@@ -30,11 +41,10 @@ USE `score4`;
 --
 
 DROP TABLE IF EXISTS `board`;
-CREATE TABLE IF NOT EXISTS `board` (
+CREATE TABLE `board` (
   `x` tinyint(1) NOT NULL,
   `y` tinyint(1) NOT NULL,
-  `p_color` enum('Y','R') DEFAULT NULL,
-  PRIMARY KEY (`x`,`y`)
+  `p_color` enum('Y','R') DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -78,11 +88,11 @@ INSERT INTO `board` (`x`, `y`, `p_color`) VALUES
 (6, 4, NULL),
 (6, 5, NULL),
 (6, 6, NULL),
-(7, 1, ''),
-(7, 2, ''),
-(7, 3, ''),
-(7, 4, ''),
-(7, 5, ''),
+(7, 1, NULL),
+(7, 2, NULL),
+(7, 3, NULL),
+(7, 4, NULL),
+(7, 5, NULL),
 (7, 6, NULL);
 
 -- --------------------------------------------------------
@@ -92,11 +102,10 @@ INSERT INTO `board` (`x`, `y`, `p_color`) VALUES
 --
 
 DROP TABLE IF EXISTS `board_empty`;
-CREATE TABLE IF NOT EXISTS `board_empty` (
+CREATE TABLE `board_empty` (
   `x` tinyint(1) NOT NULL,
   `y` tinyint(1) NOT NULL,
-  `p_color` enum('Y','R') DEFAULT NULL,
-  PRIMARY KEY (`x`,`y`)
+  `p_color` enum('Y','R') DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -154,12 +163,28 @@ INSERT INTO `board_empty` (`x`, `y`, `p_color`) VALUES
 --
 
 DROP TABLE IF EXISTS `game_status`;
-CREATE TABLE IF NOT EXISTS `game_status` (
+CREATE TABLE `game_status` (
   `status` enum('not active','initialized','started','ended','aborted') NOT NULL,
   `p_turn` enum('Y','R') DEFAULT NULL,
   `result` enum('Y','R','D') DEFAULT NULL,
   `last_change` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Άδειασμα δεδομένων του πίνακα `game_status`
+--
+
+INSERT INTO `game_status` (`status`, `p_turn`, `result`, `last_change`) VALUES
+('not active', NULL, NULL, '2020-12-16 11:12:40');
+
+--
+-- Δείκτες `game_status`
+--
+DROP TRIGGER IF EXISTS `set_Status_lastchange`;
+DELIMITER $$
+CREATE TRIGGER `set_Status_lastchange` BEFORE UPDATE ON `game_status` FOR EACH ROW SET NEW.last_change = NOW()
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -168,11 +193,39 @@ CREATE TABLE IF NOT EXISTS `game_status` (
 --
 
 DROP TABLE IF EXISTS `players`;
-CREATE TABLE IF NOT EXISTS `players` (
+CREATE TABLE `players` (
   `username` varchar(20) DEFAULT NULL,
-  `p_color` enum('Y','R') NOT NULL,
-  PRIMARY KEY (`p_color`)
+  `player_color` enum('Y','R') NOT NULL,
+  `token` varchar(100) DEFAULT NULL,
+  `last_action` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Άδειασμα δεδομένων του πίνακα `players`
+--
+
+
+--
+-- Ευρετήρια για άχρηστους πίνακες
+--
+
+--
+-- Ευρετήρια για πίνακα `board`
+--
+ALTER TABLE `board`
+  ADD PRIMARY KEY (`x`,`y`);
+
+--
+-- Ευρετήρια για πίνακα `board_empty`
+--
+ALTER TABLE `board_empty`
+  ADD PRIMARY KEY (`x`,`y`);
+
+--
+-- Ευρετήρια για πίνακα `players`
+--
+ALTER TABLE `players`
+  ADD PRIMARY KEY (`player_color`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
