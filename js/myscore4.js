@@ -1,5 +1,6 @@
 var me={};
 var game_status={};
+var board={};
 
 $(function () {
 	draw_empty_board();
@@ -29,23 +30,42 @@ function draw_empty_board() {
 }
 
 function fill_board(){
-	$.ajax({url: "score4.php/board/" , success:fill_board_by_data});
+	$.ajax({url: "score4.php/board/" ,
+			headers: {"X-Token": me.token},
+			success:fill_board_by_data});
 }
 
 function reset_board() {
-	$.ajax({url: "score4.php/board/", method: 'POST',  success: fill_board_by_data });
+	$.ajax({url: "score4.php/board/", headers: {"X-Token": me.token}, method: 'POST',  success: fill_board_by_data });
 	$('#move_div').hide();
 	$('#game_initializer').show(2000);
 }
 
 function fill_board_by_data(data){
+	board=data;
+	var img = '';
 	for(var i=0; i<data.length; i++){
 		var o  = data[i];
 		var id = '#square_' + o.x + '_' + o.y; //εκχωρω μερος του καθε αντικειμενου του ΑΡΙ 
 													//(συντεταγμενες x,y) για να μπορω να αναφερθω 
 														//σε καθε ενα κελι του board ξεχωριστα
 		var c = o.p_color; //
-		$(id).html(c); // κανω το inner HTML καθε στοιχειου null (οπως ειναι και στο ΑΡΙ)
+		if(o.p_color=='Y'){
+			  img = $('<img />', {  
+				  src: 'images/Y.png',
+				  width : '100%',
+				  height : 'auto'
+				});
+		}else if(o.p_color=='R'){
+			img = $('<img />', {  
+				  src: 'images/R.png', 
+				  width : '100%',
+				  height : 'auto'
+				});
+		}else{
+			img = c;
+		}
+		$(id).html(img); // κανω το inner HTML καθε στοιχειου null (οπως ειναι και στο ΑΡΙ)
 	}
 }
 function login_to_game() {
@@ -60,6 +80,7 @@ function login_to_game() {
 	$.ajax({url: "score4.php/players/"+p_color,
 			method: 'PUT',
 			datatype: "json",
+			headers: {"X-Token": me.token},
 			contentType: 'application/json',
 			data: JSON.stringify( {username: $('#username').val(), player_color: p_color}),
 			success: login_result,
@@ -79,7 +100,7 @@ function login_error(data,y,z,c) {
 }
 
 function game_status_update(){
-	$.ajax({url: "score4.php/status/", success: update_status });
+	$.ajax({url: "score4.php/status/", success: update_status,headers: {"X-Token": me.token} });
 }
 
 
@@ -95,11 +116,11 @@ function update_status(data) {
 	if(game_status.p_turn==me.player_color &&  me.player_color!=null) {
 		x=0;
 		// do play
-		$('#move_div').show(1000);
+		$('#move_div').show();		
 		setTimeout(function() { game_status_update();}, 15000);
 	} else {
 		// must wait for something
-		$('#move_div').hide(1000);
+		$('#move_div').hide();
 		setTimeout(function() { game_status_update();}, 4000);
 	}
  	
@@ -122,12 +143,14 @@ function do_move() {
 			method: 'PUT',
 			dataType: "json",
 			contentType: 'application/json',
-			data: JSON.stringify( {x: a[2], y: a[3]}),
+			data: JSON.stringify( {x: a[0], y: a[1]}),
+			headers: {"X-Token": me.token},
 			success: move_result,
 			error: login_error});
 	
 }
 
 function move_result(data){
-	
+	fill_board_by_data(data);
+	$('#move_div').hide();
 }

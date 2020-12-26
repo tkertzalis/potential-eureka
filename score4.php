@@ -9,6 +9,9 @@
 	$method = $_SERVER['REQUEST_METHOD'];
 	$request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
 	$input = json_decode(file_get_contents( 'php://input' ),true);
+	if(isset($_SERVER['HTTP_X_TOKEN'])){
+		$input['token']=$_SERVER['HTTP_X_TOKEN'];
+	}
 	
 	switch($r=array_shift($request)){
 		case 'board' :
@@ -16,7 +19,7 @@
 				case '' :
 				case null : handle_board($method);
 					break;
-				case 'piece': handle_piece($method, $request);
+				case 'piece': handle_piece($method,$request[0],$request[1],$input);
 					break;
 				
 				default: header("HTTP/1.1 404 Not Found");
@@ -43,6 +46,14 @@
 			reset_board();
 		}
 	}
+	
+	function handle_piece($method, $x,$y,$input) {
+	if($method=='GET') {
+        show_piece($x,$y);
+    } else if ($method=='PUT') {
+		move_piece($x,$y,$input['token']);
+    }    
+}
 	
 	function handle_player($method, $request, $input){
 		switch ($b=array_shift($request)){

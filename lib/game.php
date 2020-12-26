@@ -18,22 +18,30 @@
  function check_abort(){
 	 global $mysqli;
 	 
-	 $sql = "update game_status set status='aborted', result=if(p_turn='Y','R','Y'),p_turn=null where p_turn is not null and last_change<(now()-INTERVAL 5 MINUTE) and status='started'";
+	 $sql = "update game_status set status='aborted', result=if(p_turn='Y','R','Y'),p_turn=null where p_turn is not null and last_change<(now()-INTERVAL 25 MINUTE) and status='started'";
 	 $st = $mysqli->prepare($sql);
 	 
 	 $r = $st->execute();
 	 
  }
  
+ function read_status() {
+	global $mysqli;
+	
+	$sql = 'select * from game_status';
+	$st = $mysqli->prepare($sql);
+
+	$st->execute();
+	$res = $st->get_result();
+	$status = $res->fetch_assoc();
+	return($status);
+}
+ 
  function update_game_status(){
 	 global $mysqli;
 	 
-	 $sql = 'select * from game_status';
-	 $st = $mysqli->prepare($sql);
-	 
-	 $st->execute();
-	 $res = $st->get_result();
-	 $status = $res->fetch_assoc();
+	
+	 $status = read_status();
 	 
 	 $new_status=null;
 	 $new_turn=null;
@@ -64,19 +72,35 @@
 		case 1: $new_status='initialized'; break;
 		case 2: $new_status='started'; 
 				if($status['p_turn']==null) {
-					$new_turn='Y'; // It was not started before...
+					$new_turn=who_plays_first(); 
+				}else if($status['p_turn']=='Y'){
+					$new_turn = 'R';
+				}else{
+					$new_turn = 'Y';
 				}
 				break;
 	}
-
+	
+	read_board();
+	
 	$sql = 'update game_status set status=?, p_turn=?';
 	$st = $mysqli->prepare($sql);
 	$st->bind_param('ss',$new_status,$new_turn);
 	$st->execute();
 	
 	
-	
 }
+
+	function who_plays_first(){ //αποφασιζει ποιος θα παιξει πρωτη φορα στην τυχη 
+		$x = rand(0,1);
+		$option = '';
+		switch($x) {
+			case 0 : $option='Y'; break;
+			case 1 : $option = 'R'; break;
+		}
+		return $option;
+	}
+
 
 
 
