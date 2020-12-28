@@ -20,8 +20,8 @@
 				case null : handle_board($method);
 					break;
 				case 'piece': handle_piece($method,$request[0],$request[1],$input);
-					break;
-				
+					break;	
+					
 				default: header("HTTP/1.1 404 Not Found");
 					break;
 			}
@@ -48,12 +48,13 @@
 	}
 	
 	function handle_piece($method, $x,$y,$input) {
-	if($method=='GET') {
-        show_piece($x,$y);
-    } else if ($method=='PUT') {
-		move_piece($x,$y,$input['token']);
-    }    
-}
+		if($method=='GET') {
+			show_piece($x,$y);
+		} else if ($method=='PUT') {
+			move_piece($x,$y,$input['token']);
+		}    
+	}
+	
 	
 	function handle_player($method, $request, $input){
 		switch ($b=array_shift($request)){

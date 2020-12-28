@@ -12,16 +12,6 @@
 }
 
 
-
-
-
-
-
-
-
-
-
-
 function move_piece($x,$y,$token) {
 	
 	if($token==null || $token=='') {
@@ -56,11 +46,24 @@ function move_piece($x,$y,$token) {
 		exit;
 	}else{
 		do_move($color,$x,$y);
+		change_turn($color);
+		
 	}
 	
 	
 }
 
+function change_turn($c) //αλλάζει τη σειρά αφού γίνει κίνηση
+{
+	global $mysqli;
+	if($c=='Y'){
+		$sql = "UPDATE game_status SET p_turn='R' WHERE status ='started'";
+	}else if($c=='R'){
+		$sql = "UPDATE game_status SET p_turn='Y' WHERE status ='started'";		
+	}
+	$st = $mysqli->prepare($sql);
+	$r = $st->execute();
+}
 
 
 
@@ -141,7 +144,7 @@ function move_piece($x,$y,$token) {
 		$st = $mysqli->prepare($sql);
 		$st->bind_param('sii',$b,$x,$y);
 		$st->execute();
-		
+	
 		header('Content-type: application/json');
 		print json_encode(read_board(), JSON_PRETTY_PRINT);
 	}

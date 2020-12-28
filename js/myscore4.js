@@ -116,11 +116,13 @@ function update_status(data) {
 	if(game_status.p_turn==me.player_color &&  me.player_color!=null) {
 		x=0;
 		// do play
-		$('#move_div').show();		
-		setTimeout(function() { game_status_update();}, 15000);
+		$('#move_div').show();
+		//alert("Είναι σειρά σου να παίξεις");		
+		setTimeout(function() { game_status_update();}, 4000);
 	} else {
 		// must wait for something
 		$('#move_div').hide();
+		
 		setTimeout(function() { game_status_update();}, 4000);
 	}
  	
@@ -153,4 +155,6 @@ function do_move() {
 function move_result(data){
 	fill_board_by_data(data);
 	$('#move_div').hide();
+	$('#change_turn').show();
 }
+
