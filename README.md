@@ -2,7 +2,7 @@
 
 Περιγραφή του API 
 
-URI 				Method 		Ενέργεια												Return Status
+
 /board				GET 		Επιστρέφει σε json την κατάσταση του board 				200 (OK), 400 (Bad Request)
 								εκείνη τη στιγμή
 					
