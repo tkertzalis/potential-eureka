@@ -1,4 +1,4 @@
-# ADISE20_154468
+# Web-based SCORE4 παιχνίδι
 
 Περιγραφή του API 
 
